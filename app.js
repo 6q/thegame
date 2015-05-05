@@ -9,5 +9,30 @@ app.get('/', function(req, res){
   res.render('/index.html');
 });
 
+var playerCount = 0;
+var id = 0;
+ 
+io.on('connection', function (socket) {
+  playerCount++;
+  id++;
+  setTimeout(function () {
+    socket.emit('connected', { playerId: id });
+    io.emit('count', { playerCount: playerCount });
+  }, 1500); // 1.5 second delay on connection gives a nice buffer time
+ 
+  socket.on('disconnect', function () {
+    playerCount--;
+    io.emit('count', { playerCount: playerCount });
+  });
+
+  socket.on('update', function (data) {
+    socket.broadcast.emit('updated', data);
+  });
+  
+});
+
+
+
+
 server.listen(8000);
 console.log("Multiplayer app listening on port 8000");
